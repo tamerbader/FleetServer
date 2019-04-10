@@ -33,7 +33,7 @@ class App extends Component {
     
       let data = response.json()
       console.log('Hello WOELD')
-      console.log(data.latitude)
+      console.log(data)
     }, function(error) {
       console.log(error)
     })
