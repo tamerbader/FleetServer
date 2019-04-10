@@ -1,25 +1,58 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+//import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import ReactMapGL,{Marker} from 'react-map-gl';
+
+
 
 class App extends Component {
+
+  state = {
+    viewport: {
+      width: 1500,
+      height: 1000,
+      latitude: 38.9916541,
+      longitude: -76.93770289999999,
+      zoom: 8
+    }
+  };
+  
+  componentDidMount() {
+    fetch("https://us-central1-fleet-8b5a9.cloudfunctions.net/getDeviceStatus", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "deviceID": "1121"
+      },
+    }).then(function(response) {
+      /*response.status     //=> number 100–599
+      response.statusText //=> String
+      response.headers    //=> Headers
+      response.url        //=> String*/
+    
+      let data = response.json()
+      console.log('Hello WOELD')
+      console.log(data.latitude)
+    }, function(error) {
+      console.log(error)
+    })
+  }
+
   render() {
+    const position = [51.505, -0.09]
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <ReactMapGL 
+        mapboxApiAccessToken="pk.eyJ1IjoiNDA4cmZsZWV0IiwiYSI6ImNqdWJmeXJqdzBkNG40NG8wMXFoZDlqYncifQ.YkRrorh-PE6HVYDtZf1nAw" 
+        mapStyle="mapbox://styles/mapbox/dark-v9"s
+        {...this.state.viewport}
+        onViewportChange={(viewport) => this.setState({viewport})}>
+
+        <Marker latitude={38.9916541} longitude={-76.93770289999999} offsetLeft={0} offsetTop={0}>
+          <img src="https://i.imgur.com/MK4NUzI.png" alt="Logo" />
+        </Marker>
+      </ReactMapGL>
       </div>
     );
   }
