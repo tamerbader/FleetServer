@@ -125,10 +125,20 @@ export const activateNewDevice = functions.https.onRequest((request, response) =
         console.log("Successfully Activated " + deviceName + " With ID: " + deviceID)
 
         admin.firestore().collection('devices').doc(deviceID).collection('coordinates').add({longitude: 0, latitude: 0, timestamp: time }).then((writeResult) => {
-            console.log("Successfully Wrote")
-            response.json({
-                result: `Activated Device with ID: ${deviceID} added.`
+            console.log("Successfully Wrote ")
+
+            firestore_device.doc(deviceID).collection('status').add({pingFrequency: 60, alarmEnabled: false}).then((res) => {
+                console.log("Added State")
+                response.json({
+                    result: `Activated Device with ID: ${deviceID} added.`
+                })
+            }).catch((error) => {
+                console.log("Error Adding State")
+                response.status(400).send(JSON.stringify({
+                    error: "Couldn't Activate New Device's State"
+                }))
             })
+            
         }).catch((error) => {
             console.log("Unsuccessfully Wrote");
             response.status(400).send(JSON.stringify({
@@ -160,5 +170,3 @@ function checkIfDeviceExists(deviceID: string | undefined): Promise<boolean> {
         })
     })
 }
-
-// Method To Check If the Device Has Ever Sent Coordinates
