@@ -28,28 +28,31 @@ export const sendPulse = functions.https.onRequest((request, response) => {
         var deviceExistsPromise = checkIfDeviceExists(deviceID)
 
         deviceExistsPromise.then((result) => {
+            // Device Does Exist
+            if (result == true) {
+                firestore_device.doc(deviceID).collection('coordinates').add({longitude: longitude, latitude: latitude, timestamp: time }).then((writeResult) => {
+                    console.log("Successfully Pinged Location")
+                    response.status(200).json({
+                        result: `Coordinated with ID: ${writeResult.id} added.`
+                    })
+                }).catch((error) => {
+                    console.log("Unsuccessfully Wrote");
+                    response.status(400).send(JSON.stringify({
+                        error: "Invalid Data Sent"
+                    }))
+                })
+            } else {
+                console.log('Device Does Not Exist')
+                response.status(400).send(JSON.stringify({
+                    error: "Device Does Not Exist"
+                }))
+            }
+            
 
         }).catch((error) => {
             console.log("Firestore Request Catched")
             response.status(400).send(JSON.stringify({
                 error: "Something Bad Happened When looking For Device"
-            }))
-        })
-
-
-
-
-        
-
-        admin.firestore().collection('devices').doc(deviceID).collection('coordinates').add({longitude: longitude, latitude: latitude, timestamp: time }).then((writeResult) => {
-            console.log("Successfully Wrote")
-            response.json({
-                result: `Message with ID: ${writeResult.id} added.`
-            })
-        }).catch((error) => {
-            console.log("Unsuccessfully Wrote");
-            response.status(400).send(JSON.stringify({
-                error: "Invalid Data Sent"
             }))
         })
 
