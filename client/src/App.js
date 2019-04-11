@@ -25,18 +25,11 @@ class App extends Component {
         "Content-Type": "application/json",
         "deviceID": "1121"
       },
-    }).then(function(response) {
-      /*response.status     //=> number 100–599
-      response.statusText //=> String
-      response.headers    //=> Headers
-      response.url        //=> String*/
-    
-      let data = response.json()
-      console.log('Hello WOELD')
-      console.log(data)
-    }, function(error) {
-      console.log(error)
-    })
+    }).then(response => response.json())
+      .then(json => {
+        this.setState({
+        })
+      })
   }
 
   render() {
@@ -45,7 +38,6 @@ class App extends Component {
       <div className="App">
       <ReactMapGL 
         mapboxApiAccessToken="pk.eyJ1IjoiNDA4cmZsZWV0IiwiYSI6ImNqdWJmeXJqdzBkNG40NG8wMXFoZDlqYncifQ.YkRrorh-PE6HVYDtZf1nAw" 
-        mapStyle="mapbox://styles/mapbox/dark-v9"s
         {...this.state.viewport}
         onViewportChange={(viewport) => this.setState({viewport})}>
 
