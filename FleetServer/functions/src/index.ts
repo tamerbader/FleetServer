@@ -32,9 +32,27 @@ export const sendPulse = functions.https.onRequest((request, response) => {
             if (result == true) {
                 firestore_device.doc(deviceID).collection('coordinates').add({longitude: longitude, latitude: latitude, timestamp: time }).then((writeResult) => {
                     console.log("Successfully Pinged Location")
-                    response.status(200).json({
-                        result: `Coordinated with ID: ${writeResult.id} added.`
+
+                    checkIfBikeShouldUpdateState(deviceID).then((res) => {
+                        if (res == true) {
+                            console.log('WE SHOULD UPDATE')
+                            response.status(200).json({
+                                result: `Coordinates with ID: ${writeResult.id} added.`,
+                                shouldRequestUpdate: true
+                            })
+                        } else {
+                            console.log('WE SHOULD NOT UPDATE')
+                            response.status(200).json({
+                                result: `Coordinates with ID: ${writeResult.id} added.`,
+                                shouldRequestUpdate: false
+                            })
+                        }
+
+                    }).catch((error) => {
+                        console.log('WE FUCKED UP IN BIKE STATE CHECK')
                     })
+
+                    
                 }).catch((error) => {
                     console.log("Unsuccessfully Wrote");
                     response.status(400).send(JSON.stringify({
@@ -161,6 +179,27 @@ function checkIfDeviceExists(deviceID: string | undefined): Promise<boolean> {
 
         devicePromise.then((doc) => {
             if (!doc.exists) {
+                resolve(false)
+            } else {
+                resolve(true)
+            }
+        }).catch((error) => {
+            reject(error)
+        })
+    })
+}
+
+function checkIfBikeShouldUpdateState(deviceID: string | undefined): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+
+        var statePromise = firestore_device.doc(deviceID).get()
+
+        statePromise.then((doc) => {
+            const data = doc.data()
+            const dataString = JSON.stringify(data)
+            const obj = JSON.parse(dataString)
+            console.log("Value is " + obj.shouldRequestUpdate)
+            if (obj.shouldRequestUpdate == false) {
                 resolve(false)
             } else {
                 resolve(true)
