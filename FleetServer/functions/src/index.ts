@@ -72,21 +72,21 @@ export const getDeviceStatus = functions.https.onRequest((request, response) => 
                 
             }).catch((error) => {
                 console.log("Couldn't Get Users Location")
-                response.send(JSON.stringify({
+                response.status(400).send(JSON.stringify({
                     error: "Couldn't Get A Location"
                 }))
             })
 
         } else {
             console.log('Device Does Not Exist')
-            response.send(JSON.stringify({
+            response.status(400).send(JSON.stringify({
                 error: "Device Does Not Exist"
             }))
         }
     })
 .catch((error) => {
         console.log("Firestore Request Catched")
-        response.send(JSON.stringify({
+        response.status(400).send(JSON.stringify({
             error: "Something Bad Happened When looking For Device"
         }))
     })
