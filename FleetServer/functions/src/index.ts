@@ -24,6 +24,23 @@ export const sendPulse = functions.https.onRequest((request, response) => {
         let latitude = parseFloat(JSON.stringify(request.body.latitude));
         let time = Date.now();
 
+        // Check If the Device Is Activated
+        var deviceExistsPromise = checkIfDeviceExists(deviceID)
+
+        deviceExistsPromise.then((result) => {
+
+        }).catch((error) => {
+            console.log("Firestore Request Catched")
+            response.status(400).send(JSON.stringify({
+                error: "Something Bad Happened When looking For Device"
+            }))
+        })
+
+
+
+
+        
+
         admin.firestore().collection('devices').doc(deviceID).collection('coordinates').add({longitude: longitude, latitude: latitude, timestamp: time }).then((writeResult) => {
             console.log("Successfully Wrote")
             response.json({
@@ -51,7 +68,6 @@ export const getDeviceStatus = functions.https.onRequest((request, response) => 
     const deviceID = request.get("deviceID")
 
     // Check if the Device Exists
-
     var deviceExistsPromise = checkIfDeviceExists(deviceID)
 
     deviceExistsPromise.then((result) => {
@@ -124,7 +140,7 @@ export const activateNewDevice = functions.https.onRequest((request, response) =
     })
 })
 
-
+// Method To Check If A Device Exists Or Not
 function checkIfDeviceExists(deviceID: string | undefined): Promise<boolean> {
     return new Promise((resolve, reject) => {
 
@@ -141,3 +157,5 @@ function checkIfDeviceExists(deviceID: string | undefined): Promise<boolean> {
         })
     })
 }
+
+// Method To Check If the Device Has Ever Sent Coordinates
