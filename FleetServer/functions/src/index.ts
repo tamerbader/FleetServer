@@ -50,31 +50,46 @@ export const getDeviceStatus = functions.https.onRequest((request, response) => 
     });
     const deviceID = request.get("deviceID")
 
+    // Check if the Device Exists
 
-        // Get Devices Location
-        admin.firestore().collection('devices').doc(deviceID).collection("coordinates").orderBy("timestamp", "desc").get().then((snapshot) => {
-            var counter = 0;
+    var deviceExistsPromise = checkIfDeviceExists(deviceID)
 
-            snapshot.forEach(doc => {
-                if (counter == 0) {
-                    const data = doc.data();
-                    console.log(data);
-                    response.status(200).send(data);
-                }
-                counter += 1;
+    deviceExistsPromise.then((result) => {
+        if (result == true) {
+            var coordinatePromise = firestore_device.doc(deviceID).collection("coordinates").orderBy("timestamp", "desc").get()
+
+            coordinatePromise.then((snapshot) => {
+                var counter = 0;
+    
+                snapshot.forEach(doc => {
+                    if (counter == 0) {
+                        const data = doc.data();
+                        console.log(data);
+                        response.status(200).send(data);
+                    }
+                    counter += 1;
+                })
+                
+            }).catch((error) => {
+                console.log("Couldn't Get Users Location")
+                response.send(JSON.stringify({
+                    error: "Couldn't Get A Location"
+                }))
             })
 
-            // Only hits this block of code if We dont find any data for that device.
-            response.status(400).send(JSON.stringify({
+        } else {
+            console.log('Device Does Not Exist')
+            response.send(JSON.stringify({
                 error: "Device Does Not Exist"
             }))
-            
-        }).catch((error) => {
-            console.log("Couldn't Get Users Location")
-            response.status(400).send(JSON.stringify({
-                error: "Device Does Not Exist"
-            }))
-        })
+        }
+    })
+.catch((error) => {
+        console.log("Firestore Request Catched")
+        response.send(JSON.stringify({
+            error: "Something Bad Happened When looking For Device"
+        }))
+    })
 
 })
 
@@ -88,7 +103,7 @@ export const activateNewDevice = functions.https.onRequest((request, response) =
     const time = Date.now()
 
     firestore_device.doc(deviceID).set({deviceName: deviceName, deviceID: deviceID, shouldRequestUpdate: false}).then((activateResult) => {
-        console.log("Successfully Activated Device With ID: " + deviceID)
+        console.log("Successfully Activated " + deviceName + " With ID: " + deviceID)
 
         admin.firestore().collection('devices').doc(deviceID).collection('coordinates').add({longitude: 0, latitude: 0, timestamp: time }).then((writeResult) => {
             console.log("Successfully Wrote")
@@ -108,3 +123,21 @@ export const activateNewDevice = functions.https.onRequest((request, response) =
         }))
     })
 })
+
+
+function checkIfDeviceExists(deviceID: string | undefined): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+
+        var devicePromise = firestore_device.doc(deviceID).get()
+
+        devicePromise.then((doc) => {
+            if (!doc.exists) {
+                resolve(false)
+            } else {
+                resolve(true)
+            }
+        }).catch((error) => {
+            reject(error)
+        })
+    })
+}
