@@ -1,1 +1,29 @@
 Hello World
+
+<button onclick="get_firebase()">Get Firebase</button>
+
+<script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
+<script>
+   // const firebase = require("firebase");
+   // // Required for side-effects
+   // require("firebase/firestore");
+
+   // Initialize Cloud Firestore through Firebase
+   firebase.initializeApp({
+      apiKey: 'AIzaSyD4Zu6YxrA9AQaeNU1WTj64mzkWnoi_ZAM',
+      authDomain: 'fleet-8b5a9.firebaseapp.com',
+     projectId: 'fleet-8b5a9'
+   });
+
+   var db = firebase.firestore();
+
+   function get_firebase() {
+      db.collection("devices").get().then((querySnapshot) => {
+         querySnapshot.forEach((doc) => {
+            console.log(doc.id, " => ", doc.data());
+         });
+      });
+   }
+
+</script>

@@ -9,6 +9,11 @@ app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
+// other files
+app.get('/*', function(req, res) {
+  res.sendFile(__dirname + req.url);
+});
+
 if(process.argv[2]) {
    serverPort = process.argv[2];
 }
