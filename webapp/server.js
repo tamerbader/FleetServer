@@ -17,6 +17,19 @@ http.listen(serverPort, function() {
   console.log('Listening on Port: ' + serverPort);
 });
 
+app.get('/*', function(req, res) {
+  res.sendFile(__dirname + req.url);
+ });
+
+ db.collection("devices").get().then((querySnapshot) => {
+  querySnapshot.forEach((doc) => {
+      console.log(`${doc.id} => ${doc.data()}`);
+  });
+});
+
+
+
+
 
 
 
