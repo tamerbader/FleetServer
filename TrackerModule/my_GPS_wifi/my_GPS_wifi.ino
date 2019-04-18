@@ -1,6 +1,10 @@
+//helloo
 #include <LGPS.h>
 #include <LWiFi.h>
 #include <LWiFiClient.h>
+#include <LGPRS.h>
+#include <LGPRSClient.h>
+#include <LGPRSServer.h>
 
 #define WIFI_AP "LinkIt-ONE"
 #define WIFI_PASSWORD "4-m8868O"
@@ -12,14 +16,20 @@ char buff[256];
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  LGPS.powerOn();
-  LWiFi.begin();
   Serial.println("LGPS Power on, and waiting ...");
-  Serial.println("Attempting to connect to WiFi");  
-  while (0 == LWiFi.connect(WIFI_AP, LWiFiLoginInfo(WIFI_AUTH,WIFI_PASSWORD))){
-    Serial.println("Attempting to connect to WiFi");  
+  LGPS.powerOn();
+  
+//  LWiFi.begin();
+//  Serial.println("Attempting to connect to WiFi");  
+//  while (0 == LWiFi.connect(WIFI_AP, LWiFiLoginInfo(WIFI_AUTH,WIFI_PASSWORD))){
+//    Serial.println("Attempting to connect to WiFi");  
+//    delay(1000);
+//  }
+  Serial.println("Attach to GPRS network...");
+  while (!LGPRS.attachGPRS("TM","","")){
     delay(1000);
   }
+  
   delay(3000);
 }
 
@@ -33,7 +43,7 @@ void loop() {
   LGPS.getData(&info);
   Serial.println((char*)info.GPGGA); 
   parseGPGGA((const char*)info.GPGGA, &latitude,&longitude, &lat_dir, &long_dir);
-  sendPulse(latitude,longitude,lat_dir,long_dir,123456);
+  sendPulse(latitude,longitude,lat_dir,long_dir,123456,'G');
 
 //  while (!c.available()){
 //    delay(100);
@@ -46,5 +56,5 @@ void loop() {
 //      Serial.println("no more content, disconnect");
 //    }
 //  }
-  delay(5000);
+  delay(10000);
 }

@@ -1,38 +1,72 @@
-static void sendPulse(double lat, double longitude, char lat_dir, char long_dir, int id){
+static void sendPulse(double lat, double longitude, char lat_dir, char long_dir, int id, char m){
   char URL[100] = "us-central1-fleet-8b5a9.cloudfunctions.net";
   char lat_str[12] = {0};
   char long_str[12] = {0};
-  LWiFiClient client;
   parseLatLong(lat_str, long_str, lat,longitude, lat_dir,long_dir);
-  
-  Serial.println("Connecting to website");
-  while (0 == client.connect(URL,80)){
-    Serial.println("Re-Connecting to WebSite");
-    delay(1000);
-  }
-  
-  String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ "}";
-  client.print("POST /sendPulse");
-  client.println(" HTTP/1.1");
-  client.println("Content-Type: application/json");
-  client.println("Content-Length: " + String(data.length()));
-  client.print("Host: ");
-  client.println(URL);
-  client.print("\n" + data);
-  //client.print(char(26));
-  
-  Serial.println("waiting HTTP response:");
-  while (!client.available()){
-    delay(100);
-  }
-  while (client){
-    int v = client.read();
-    if (v != -1){
-      Serial.print((char)v);
-    }else{
-      Serial.println("no more content, disconnect");
-      client.stop();
+  if( m == 'W'){
+    LWiFiClient client;
+    Serial.println("Connecting to website");
+    while (0 == client.connect(URL,80)){
+      Serial.println("Re-Connecting to WebSite");
+      delay(1000);
     }
+    
+    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ "}";
+    client.print("POST /sendPulse");
+    client.println(" HTTP/1.1");
+    client.println("Content-Type: application/json");
+    client.println("Content-Length: " + String(data.length()));
+    client.print("Host: ");
+    client.println(URL);
+    client.print("\n" + data);
+    //client.print(char(26));
+    
+    Serial.println("waiting HTTP response:");
+    while (!client.available()){
+      delay(100);
+    }
+    while (client){
+      int v = client.read();
+      if (v != -1){
+        Serial.print((char)v);
+      }else{
+        Serial.println("no more content, disconnect");
+        client.stop();
+      }
+    }
+  }else if(m == 'G'){
+    LGPRSClient client;
+    Serial.println("Connecting to website");
+    while (0 == client.connect(URL,80)){
+      Serial.println("Re-Connecting to WebSite");
+      delay(1000);
+    }
+    
+    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ "}";
+    client.print("POST /sendPulse");
+    client.println(" HTTP/1.1");
+    client.println("Content-Type: application/json");
+    client.println("Content-Length: " + String(data.length()));
+    client.print("Host: ");
+    client.println(URL);
+    client.print("\n" + data);
+    //client.print(char(26));
+    
+    Serial.println("waiting HTTP response:");
+    while (!client.available()){
+      delay(100);
+    }
+    while (client){
+      int v = client.read();
+      if (v != -1){
+        Serial.print((char)v);
+      }else{
+        Serial.println("no more content, disconnect");
+        client.stop();
+      }
+    }
+    
+    
   }
 
 }
