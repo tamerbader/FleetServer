@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.4",
-    "firebase": "^5.9.4"
+    "express": "^4.16.4"
   }
 }

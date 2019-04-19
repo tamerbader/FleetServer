@@ -1,6 +1,5 @@
 var app = require('express')();
 var http = require('http').Server(app);
-var firebase = require('firebase');
 
 var serverPort = 3000; // default to 3000
 
@@ -19,14 +18,7 @@ http.listen(serverPort, function() {
 
 app.get('/*', function(req, res) {
   res.sendFile(__dirname + req.url);
- });
-
- db.collection("devices").get().then((querySnapshot) => {
-  querySnapshot.forEach((doc) => {
-      console.log(`${doc.id} => ${doc.data()}`);
-  });
 });
-
 
 
 

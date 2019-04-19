@@ -8,7 +8,7 @@
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
         
         <!-- MapBox -->
-	    <script src='https://static-assets.mapbox.com/gl-pricing/dist/mapbox-gl.js'></script>
+        <script src='https://static-assets.mapbox.com/gl-pricing/dist/mapbox-gl.js'></script>
         <link href='https://static-assets.mapbox.com/gl-pricing/dist/mapbox-gl.css' rel='stylesheet' />
 
         <!--Stylesheet--> 
@@ -17,6 +17,9 @@
         <!-- Firebase -->
         <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-app.js"></script>
         <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        
 	</head>
 
 	<body>
@@ -32,57 +35,36 @@
         <div id='map' class='map'> </div>
 
   	<script>
+      var stores = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.034084142948,
+          38.909671288923
+        ]
+      },
+      "properties": {
+        "phoneFormatted": "(202) 234-7336",
+        "phone": "2022347336",
+        "address": "1471 P St NW",
+        "city": "Washington DC",
+        "country": "United States",
+        "crossStreet": "at 15th St NW",
+        "postalCode": "20005",
+        "state": "D.C."
+      }
+    }
+  ]
+};
 
-    //Firebase code - retrieves data for db
-        firebase.initializeApp({
-            apiKey: 'AIzaSyD4Zu6YxrA9AQaeNU1WTj64mzkWnoi_ZAM',
-            authDomain: 'fleet-8b5a9.firebaseapp.com',
-            projectId: 'fleet-8b5a9'
-        });
 
-        var db = firebase.firestore();
 
-        function get_firebase() {
-            db.collection("devices").get().then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    console.log(doc.id, " => ", doc.data());
-                });
-            });
-        }    
-
-  	mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2lqbmpqazdlMDBsdnRva284cWd3bm11byJ9.V6Hg2oYJwMAxeoR9GEzkAA';
-
-  	// This adds the map to your page
-  	var map = new mapboxgl.Map({
-      // container id specified in the HTML
-      container: 'map',
-      // style URL
-      style: 'mapbox://styles/mapbox/light-v10',
-      // initial position in [long, lat] format
-      center: [-77.034084142948, 38.909671288923],
-      // initial zoom
-      zoom: 13
-    });
-
-    
-  	// This adds the data to the map
-  	map.on('load', function (e) {
-  		// Add the data to your map as a layer
-      map.addLayer({
-        "id": "locations",
-        "type": "symbol",
-        // Add a GeoJSON source containing place coordinates and information.
-        "source": {
-          "type": "geojson",
-          "data": stores
-        },
-        "layout": {
-          "icon-image": "restaurant-15",
-          "icon-allow-overlap": true,
-        }
-      });
-  	});
 
 		</script>
+    <script src="client.js"></script>
 	</body>
 </html>
