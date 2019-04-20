@@ -65,6 +65,9 @@ function populate_map(data) {
 		// Add new marker
 		bike_markers[doc.id] = new mapboxgl.Marker()
 			.setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude])
+			.setPopup(new mapboxgl.Popup({offset: 30}) // add popups
+            .setHTML('<h3>' + "ID: " +  doc.data().deviceID + '</h3><p>' + doc.data().deviceName + '</p><p>' + "Battery: " + '</p>'))
+			
 			.addTo(map);
 
 		// Clear update location flag
