@@ -19,7 +19,6 @@ static void sendPulse(struct GPSInfo * gps_info, int id, char m){
     client.print("Host: ");
     client.println(URL);
     client.print("\n" + data);
-    //client.print(char(26));
     
     Serial.println("waiting HTTP response:");
     while (!client.available()){

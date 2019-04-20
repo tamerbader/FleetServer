@@ -6,8 +6,8 @@
 #include <LGPRSServer.h>
 
 //Start connection setting
-#define WIFI_START 0
-#define GSM_START 1
+#define WIFI_START 1
+#define GSM_START 0
 
 //GSM settings
 #define APN "TM"
@@ -64,7 +64,7 @@ void loop() {
   LGPS.getData(&info);
   Serial.println((char*)info.GPGGA); 
   parseGPGGA((const char*)info.GPGGA, &gps_info);
-  sendPulse(&gps_info,178967,'G');
+  sendPulse(&gps_info,178967,'W');
 
   delay(10000);
 }
