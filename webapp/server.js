@@ -12,8 +12,8 @@ if(process.argv[2]) {
    serverPort = process.argv[2];
 }
 
-http.listen(serverPort, function() {
-  console.log('Listening on Port: ' + serverPort);
+http.listen(process.env.PORT || serverPort, function() {
+  console.log('Listening on Port: ' + (process.env.PORT || serverPort));
 });
 
 app.get('/*', function(req, res) {
