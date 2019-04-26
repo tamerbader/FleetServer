@@ -1,7 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as cors from 'cors';
-
 const corsHandler = cors({origin: true});
 
 admin.initializeApp();
@@ -19,37 +18,50 @@ export const sendPulse = functions.https.onRequest((request, response) => {
     });
     if (request.method == "POST") {
         // Grabs Longitude and Latitude Fields From Body
-        let deviceID = request.get("deviceID")
+        let deviceID = JSON.stringify(request.body.deviceID)
         let longitude = parseFloat(JSON.stringify(request.body.longitude));
         let latitude = parseFloat(JSON.stringify(request.body.latitude));
+        let hdop = parseFloat(JSON.stringify(request.body.hdop))
         let time = Date.now();
+
+        console.log("DEVICE# " + deviceID + " LAT: " + latitude + " LONG: " + longitude + " TIME: " + time)
+        console.log(request.body)
 
         // Check If the Device Is Activated
         var deviceExistsPromise = checkIfDeviceExists(deviceID)
 
         deviceExistsPromise.then((result) => {
-            // Device Does Exist
             if (result == true) {
-                firestore_device.doc(deviceID).collection('coordinates').add({longitude: longitude, latitude: latitude, timestamp: time }).then((writeResult) => {
+                console.log("WE HAVE FOUND DEVICE# " + deviceID)
+
+                firestore_device.doc(deviceID).collection('coordinates').add({longitude: longitude, latitude: latitude, hdop: hdop, timestamp: time }).then((writeResult) => {
                     console.log("Successfully Pinged Location")
 
-                    checkIfBikeShouldUpdateState(deviceID).then((res) => {
-                        if (res == true) {
-                            console.log('WE SHOULD UPDATE')
-                            response.status(200).json({
-                                result: `Coordinates with ID: ${writeResult.id} added.`,
-                                shouldRequestUpdate: true
-                            })
-                        } else {
-                            console.log('WE SHOULD NOT UPDATE')
-                            response.status(200).json({
-                                result: `Coordinates with ID: ${writeResult.id} added.`,
-                                shouldRequestUpdate: false
-                            })
-                        }
+                    firestore_device.doc(deviceID).get().then((doc) => {
+                        const data = doc.data()
+                        const dataString = JSON.stringify(data)
+                        const obj = JSON.parse(dataString)
+                        const deviceName = obj.deviceName
+                        const shouldUpdate = obj.shouldRequestUpdate
+                        const pingFrequency = obj.pingFrequency
+
+                        firestore_device.doc(deviceID).set({deviceName: deviceName, deviceID: deviceID, shouldRequestUpdate: shouldUpdate,lastKnownLatitude: latitude, lastKnownLongitude: longitude, hdop: hdop, timestamp: time, pingFrequency: pingFrequency, shouldUpdateLocation: true}).then((activateResult) => {
+                            response.status(200).send(JSON.stringify({
+                                pingFrequency: pingFrequency
+                            }))
+                        }).catch((error) => {
+                            console.log("Unsuccessfully Updated Last Coordinates");
+                            response.status(400).send(JSON.stringify({
+                                error: "Invalid Coordinates Sent"
+                            }))
+                        })
+
 
                     }).catch((error) => {
-                        console.log('WE FUCKED UP IN BIKE STATE CHECK')
+                        console.log("Unsuccessfully Updated Last Coordinates");
+                        response.status(400).send(JSON.stringify({
+                            error: "Invalid Coordinates Sent"
+                        }))
                     })
 
                     
@@ -59,21 +71,17 @@ export const sendPulse = functions.https.onRequest((request, response) => {
                         error: "Invalid Data Sent"
                     }))
                 })
+
+
             } else {
-                console.log('Device Does Not Exist')
-                response.status(400).send(JSON.stringify({
-                    error: "Device Does Not Exist"
-                }))
+                console.log("SORRY UNABLE TO FIND DEVICE# " + deviceID)
+                response.status(400).send("Bad News")
             }
-            
-
         }).catch((error) => {
-            console.log("Firestore Request Catched")
-            response.status(400).send(JSON.stringify({
-                error: "Something Bad Happened When looking For Device"
-            }))
-        })
+            console.log("WE HAVE ENTERED CATCH OF CHECK DEVICE")
+            response.status(400).send("Bad News!")
 
+        })
     } else {
         console.log("Someone tried to do a " + request.method + " request on Send Pulse")
         response.status(400).send(JSON.stringify({
@@ -189,7 +197,7 @@ function checkIfDeviceExists(deviceID: string | undefined): Promise<boolean> {
     })
 }
 
-function checkIfBikeShouldUpdateState(deviceID: string | undefined): Promise<boolean> {
+/*function checkIfBikeShouldUpdateState(deviceID: string | undefined): Promise<boolean> {
     return new Promise((resolve, reject) => {
 
         var statePromise = firestore_device.doc(deviceID).get()
@@ -208,4 +216,4 @@ function checkIfBikeShouldUpdateState(deviceID: string | undefined): Promise<boo
             reject(error)
         })
     })
-}
+}*/
