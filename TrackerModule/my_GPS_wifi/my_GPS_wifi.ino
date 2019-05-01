@@ -8,7 +8,7 @@
 //Start connection setting
 #define WIFI_START 1
 #define GSM_START 0
-
+#define COMM_MODE 'W'
 //GSM settings
 #define APN "TM"
 #define U_NAME ""
@@ -25,6 +25,7 @@ struct GPSInfo{
   char lat_dir;
   char long_dir;
   double hdop;
+  double orient;
   int sat_num;
 };
 
@@ -64,7 +65,7 @@ void loop() {
   LGPS.getData(&info);
   Serial.println((char*)info.GPGGA); 
   parseGPGGA((const char*)info.GPGGA, &gps_info);
-  sendPulse(&gps_info,178967,'W');
+  sendPulse(&gps_info,178967,COMM_MODE);
 
   delay(10000);
 }

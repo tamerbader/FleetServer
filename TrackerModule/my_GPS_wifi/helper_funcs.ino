@@ -1,3 +1,6 @@
+static void sendUpdate(){
+  
+}
 static void sendPulse(struct GPSInfo * gps_info, int id, char m){
   char URL[100] = "us-central1-fleet-8b5a9.cloudfunctions.net";
   char lat_str[12] = {0};
@@ -5,13 +8,14 @@ static void sendPulse(struct GPSInfo * gps_info, int id, char m){
   parseLatLong(lat_str, long_str, gps_info); //changing gps info to strings for POST
   if( m == 'W'){
     LWiFiClient client;
+    client.setTimeout(10000);
     Serial.println("Connecting to website");
     while (0 == client.connect(URL,80)){
       Serial.println("Re-Connecting to WebSite");
       delay(1000);
     }
     
-    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ "}";
+    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ ", \"hdop\":" + String(gps_info->hdop)+"}";
     client.print("POST /sendPulse");
     client.println(" HTTP/1.1");
     client.println("Content-Type: application/json");
@@ -23,6 +27,11 @@ static void sendPulse(struct GPSInfo * gps_info, int id, char m){
     Serial.println("waiting HTTP response:");
     while (!client.available()){
       delay(100);
+    }
+    // HTTP headers end with an empty line
+    char endOfHeaders[] = "\r\n\r\n";
+    if (!client.find(endOfHeaders)) {
+      Serial.println("No response or invalid response!");
     }
     while (client){
       int v = client.read();
@@ -41,7 +50,7 @@ static void sendPulse(struct GPSInfo * gps_info, int id, char m){
       delay(1000);
     }
     
-    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ "}";
+    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ ", \"hdop\":" + String(gps_info->hdop)+"}";
     client.print("POST /sendPulse");
     client.println(" HTTP/1.1");
     client.println("Content-Type: application/json");
@@ -69,6 +78,7 @@ static void sendPulse(struct GPSInfo * gps_info, int id, char m){
   }
 
 }
+
 static void parseLatLong(char * lat_str, char * long_str, struct GPSInfo* gps_info){
   double lat = gps_info->latitude;
   double longitude = gps_info->longitude;
@@ -167,5 +177,3 @@ void parseGPGGA(const char* GPGGAstr, struct GPSInfo *gps_info){
     Serial.println("Did not get GPS data"); 
   }
 }
-
-
