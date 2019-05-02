@@ -2,10 +2,11 @@
 <html>
 	<head>
 	    <meta charset='utf-8' />
-	    <title>Fleet Bikes</title>
+	    <title>ENEE408R Fleet Bikes</title>
         
-        <meta name='robots' content='noindex, nofollow'>
-        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" href="bike.png">
         
         <!-- MapBox -->
         <script src='https://static-assets.mapbox.com/gl-pricing/dist/mapbox-gl.js'></script>
@@ -23,48 +24,12 @@
 	</head>
 
 	<body>
-        <div class='sidebar'>
-            <div class='heading'>
-                <h1>Our locations</h1>
-            </div>
-            <button onclick="get_firebase()">Get Firebase</button>
 
-            <div id='listings' class='listings'></div>
-        </div>
+    <div class='sidebar'><h1>ENEE408R Fleet Bikes</h1></div>
+    
+    <div id='map' class='map'> </div>
 
-        <div id='map' class='map'> </div>
-
-  	<script>
-      var stores = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -77.034084142948,
-          38.909671288923
-        ]
-      },
-      "properties": {
-        "phoneFormatted": "(202) 234-7336",
-        "phone": "2022347336",
-        "address": "1471 P St NW",
-        "city": "Washington DC",
-        "country": "United States",
-        "crossStreet": "at 15th St NW",
-        "postalCode": "20005",
-        "state": "D.C."
-      }
-    }
-  ]
-};
-
-
-
-
-		</script>
     <script src="client.js"></script>
+
 	</body>
 </html>
