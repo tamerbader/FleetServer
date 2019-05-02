@@ -14,9 +14,12 @@ static int sendPulse(struct GPSInfo * gps_info, int id, char m, struct resParame
   client.setTimeout(10000);
   Serial.println("Connecting to website");
   while (0 == client.connect(URL,80)){
+    attp_count++;
+    if(attp_count == CONN_ATTEMPTS){
+      Serial.println("Failed to connect to website after 6 attempts");
+      return CONN_ERR;
+    }
     Serial.println("Re-Connecting to WebSite");
-    att_count++;
-    if(
     delay(1000);
   }
   
@@ -49,19 +52,27 @@ static int sendPulse(struct GPSInfo * gps_info, int id, char m, struct resParame
       client.stop();
     }
   }
-  return parseJsonResponse(response,resInfo);
+  return parsePulseJsonResponse(response,resInfo);
   
   
 }
-static int parseJsonResponse( char * response, struct resParameters * resInfo){
+static int parsePulseJsonResponse( char * response, struct resParameters * resInfo){
   const int capacity=JSON_OBJECT_SIZE(3); //change as parameters in response increase
   StaticJsonDocument<capacity> doc;
-  DeserializationError err = deserializeJson(doc, input);
+  DeserializationError err = deserializeJson(doc, response);
+  int temp_ping_freq = 0;
   if(err){
-    Serial.print(F("deserializeJson() failed with code "));
+    Serial.print("deserializeJson() failed with code ");
     Serial.println(err.c_str());
-    return -1;
+    return JSON_PARSE_ERR;
   }
+  temp_ping_freq = doc["pingFrequency"];
+  if(temp_ping_freq == 0){
+    Serial.print("Failed to parse ping frequency");
+    return JSON_PARSE_ERR;
+  }
+  resInfo->ping_freq = temp_ping_freq;
+  return RES_OK;
 }
 
 static void parseLatLong(char * lat_str, char * long_str, struct GPSInfo* gps_info){

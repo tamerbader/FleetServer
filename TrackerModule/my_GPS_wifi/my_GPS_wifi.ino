@@ -10,6 +10,7 @@
 #define WIFI_START 1
 #define GSM_START 0
 #define COMM_MODE 'G'
+
 //GSM settings
 #define APN "TM"
 #define U_NAME ""
@@ -19,7 +20,12 @@
 #define WIFI_AP "LinkIt-ONE"
 #define WIFI_PASSWORD "4-m8868O"
 #define WIFI_AUTH LWIFI_WPA
+
+//other constant
 #define CONN_ATTEMPTS 5
+#define CONN_ERR -2
+#define JSON_PARSE_ERR -3
+#define RES_OK 1
 
 struct GPSInfo{
   double latitude;
@@ -46,12 +52,13 @@ void setup() {
       Serial.println("Attempting to connect to WiFi");
       
       while (0 == LWiFi.connect(WIFI_AP, LWiFiLoginInfo(WIFI_AUTH,WIFI_PASSWORD))){
-        Serial.println("Trying to connect to WiFi again");
         attp_count++;
-        if(attp_count == 5){
+        if(attp_count == CONN_ATTEMPTS){
           Serial.println("Failed to connect to WiFi after 6 attempts");
           wifi_on = 0;
+          break;
         }
+        Serial.println("Trying to connect to WiFi again");
         delay(1000);
       }
       wifi_on = 1;
@@ -60,12 +67,13 @@ void setup() {
   if(GSM_START){
     Serial.println("Connect to GPRS network...");
     while (!LGPRS.attachGPRS(APN,U_NAME,P_WORD)){
-      Serial.println("Trying to connect to GSM again");
       attp_count++;
-      if(attp_count == 5){
+      if(attp_count == CONN_ATTEMPTS){
         Serial.println("Failed to connect to GSM after 6 attempts");
         gsm_on = 0;
+        break;
       }
+      Serial.println("Trying to connect to GSM again");
       delay(1000);
     }
     gsm_on = 1;
@@ -81,16 +89,23 @@ void loop() {
   char lat_dir = 0;
   char long_dir = 0;
   struct GPSInfo gps_info; //struct to put parsed gps info into
-  int ping_freq = 0;
-  if(wifi_on || gsm _on){
+  struct resParameters res_info; //struct to store response parameters into
+  int ping_freq = 10; // ping frequency in seconds;
+  int rt = 0;
+  if(wifi_on || gsm_on){
     Serial.println("GPS loop");
     LGPS.getData(&info);
     Serial.println((char*)info.GPGGA); 
     parseGPGGA((const char*)info.GPGGA, &gps_info);
-    sendPulse(&gps_info,178967,COMM_MODE, &ping_freq);
+    rt = sendPulse(&gps_info,178967,COMM_MODE, &res_info);
+    if(rt == RES_OK){
+      ping_freq = res_info.ping_freq;
+      Serial.print("Set ping frequency to: ");
+      Serial.println(ping_freq);
+    }
   }else{
     Serial.println("Could not connect to any network");
   }
 
-  delay(10000);
+  delay(ping_freq * 1000);
 }
