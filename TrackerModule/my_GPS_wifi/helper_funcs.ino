@@ -1,82 +1,67 @@
 static void sendUpdate(){
   
 }
-static void sendPulse(struct GPSInfo * gps_info, int id, char m){
+static int sendPulse(struct GPSInfo * gps_info, int id, char m, struct resParameters * resInfo){
   char URL[100] = "us-central1-fleet-8b5a9.cloudfunctions.net";
   char lat_str[12] = {0};
   char long_str[12] = {0};
+  char response[100] = {0};
+  int i = 0;
+  char attp_count = 0;
   parseLatLong(lat_str, long_str, gps_info); //changing gps info to strings for POST
-  if( m == 'W'){
-    LWiFiClient client;
-    client.setTimeout(10000);
-    Serial.println("Connecting to website");
-    while (0 == client.connect(URL,80)){
-      Serial.println("Re-Connecting to WebSite");
-      delay(1000);
-    }
-    
-    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ ", \"hdop\":" + String(gps_info->hdop)+"}";
-    client.print("POST /sendPulse");
-    client.println(" HTTP/1.1");
-    client.println("Content-Type: application/json");
-    client.println("Content-Length: " + String(data.length()));
-    client.print("Host: ");
-    client.println(URL);
-    client.print("\n" + data);
-    
-    Serial.println("waiting HTTP response:");
-    while (!client.available()){
-      delay(100);
-    }
-    // HTTP headers end with an empty line
-    char endOfHeaders[] = "\r\n\r\n";
-    if (!client.find(endOfHeaders)) {
-      Serial.println("No response or invalid response!");
-    }
-    while (client){
-      int v = client.read();
-      if (v != -1){
-        Serial.print((char)v);
-      }else{
-        Serial.println("no more content, disconnect");
-        client.stop();
-      }
-    }
-  }else if(m == 'G'){
-    LGPRSClient client;
-    Serial.println("Connecting to website");
-    while (0 == client.connect(URL,80)){
-      Serial.println("Re-Connecting to WebSite");
-      delay(1000);
-    }
-    
-    String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ ", \"hdop\":" + String(gps_info->hdop)+"}";
-    client.print("POST /sendPulse");
-    client.println(" HTTP/1.1");
-    client.println("Content-Type: application/json");
-    client.println("Content-Length: " + String(data.length()));
-    client.print("Host: ");
-    client.println(URL);
-    client.print("\n" + data);
-    //client.print(char(26));
-    
-    Serial.println("waiting HTTP response:");
-    while (!client.available()){
-      delay(100);
-    }
-    while (client){
-      int v = client.read();
-      if (v != -1){
-        Serial.print((char)v);
-      }else{
-        Serial.println("no more content, disconnect");
-        client.stop();
-      }
-    }
-    
-    
-  }
 
+  LGPRSClient client;
+  client.setTimeout(10000);
+  Serial.println("Connecting to website");
+  while (0 == client.connect(URL,80)){
+    Serial.println("Re-Connecting to WebSite");
+    att_count++;
+    if(
+    delay(1000);
+  }
+  
+  String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ ", \"hdop\":" + String(gps_info->hdop)+"}";
+  client.print("POST /sendPulse");
+  client.println(" HTTP/1.1");
+  client.println("Content-Type: application/json");
+  client.println("Content-Length: " + String(data.length()));
+  client.print("Host: ");
+  client.println(URL);
+  client.print("\n" + data);
+  //client.print(char(26));
+  
+  Serial.println("waiting HTTP response:");
+  while (!client.available()){
+    delay(100);
+  }
+  // HTTP headers end with an empty line
+  char endOfHeaders[] = "\r\n\r\n";
+  if (!client.find(endOfHeaders)) {
+    Serial.println("No response or invalid response!");
+  }
+  while (client){
+    int v = client.read();
+    if (v != -1){
+      response[i++] = v;
+      Serial.print((char)v);
+    }else{
+      Serial.println("no more content, disconnect");
+      client.stop();
+    }
+  }
+  return parseJsonResponse(response,resInfo);
+  
+  
+}
+static int parseJsonResponse( char * response, struct resParameters * resInfo){
+  const int capacity=JSON_OBJECT_SIZE(3); //change as parameters in response increase
+  StaticJsonDocument<capacity> doc;
+  DeserializationError err = deserializeJson(doc, input);
+  if(err){
+    Serial.print(F("deserializeJson() failed with code "));
+    Serial.println(err.c_str());
+    return -1;
+  }
 }
 
 static void parseLatLong(char * lat_str, char * long_str, struct GPSInfo* gps_info){
