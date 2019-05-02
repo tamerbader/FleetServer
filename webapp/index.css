@@ -26,8 +26,8 @@ body {
 
   .map {
     position:absolute;
-    left:25%;
-    width:75%;
+    /*left:25%;*/
+    width:100%;
     top:0;
     bottom:0;
   }
@@ -100,12 +100,12 @@ body {
   }
 
   .marker {
-    border: none;
+    background-image: url('bike.png');
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    /*border-radius: 50%;*/
     cursor: pointer;
-    height: 56px;
-    width: 56px;
-    background-image: url(marker.png);
-    background-color: rgba(0, 0, 0, 0);
   }
 
   .clearfix { display:block; }

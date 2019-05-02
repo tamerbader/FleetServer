@@ -8,7 +8,7 @@ var db = firebase.firestore();
 
 
 /* MAP BOX */
-mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2lqbmpqazdlMDBsdnRva284cWd3bm11byJ9.V6Hg2oYJwMAxeoR9GEzkAA';
+mapboxgl.accessToken = 'pk.eyJ1IjoiNDA4cmZsZWV0IiwiYSI6ImNqdWJmeXJqdzBkNG40NG8wMXFoZDlqYncifQ.YkRrorh-PE6HVYDtZf1nAw';
 
 // Map Style
 MAP_STYLE = {
@@ -25,7 +25,7 @@ var map = new mapboxgl.Map(MAP_STYLE);
 
 
 /* PARAMETERS */
-UPDATE_INTERVAL = 1000; // milliseconds
+UPDATE_INTERVAL = 10000; // milliseconds
 
 
 /* Global Data Structures */
@@ -39,6 +39,10 @@ $('document').ready(function(){
 	console.log("Initializing App!");
 	init_map();
 
+
+	map.on('click', function(e) {
+		
+	});
 
 	console.log("Initialization Complete!");
 });
@@ -62,16 +66,23 @@ function populate_map(data) {
 	data.forEach((doc) => {
 		// console.log(doc.id, " => ", doc.data());
 
+		// create a HTML element for each feature
+		var marker = document.createElement('div');
+		marker.className = 'marker';
+
 		// Add new marker
-		bike_markers[doc.id] = new mapboxgl.Marker()
+		bike_markers[doc.id] = new mapboxgl.Marker(marker)
 			.setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude])
 			.setPopup(new mapboxgl.Popup({offset: 30}) // add popups
-            .setHTML('<h3>' + "ID: " +  doc.data().deviceID + '</h3><p>' + doc.data().deviceName + '</p><p>' + "Battery: " + '</p>'))
-			
+         	.setHTML('<h3>' + "ID: " +  doc.data().deviceID + '</h3>' + 
+            	'<p>' + doc.data().deviceName + '</p>' + 
+            	'<p>' + "Battery: " + '</p>' +
+            	'<p>' + "Lat: " + doc.data().lastKnownLatitude + '</p>' +
+            	'<p>' + "Long: " + doc.data().lastKnownLongitude + '</p>'))
 			.addTo(map);
 
 		// Clear update location flag
-		db.collection("devices").doc(doc.id).update("shouldUpdateLocation", false);
+		db.collection("devices").doc(doc.id).update("shouldUpdateLocation", false); // TODO
 	});
 
 	console.log("Map populated");
@@ -96,7 +107,7 @@ function update_data() {
       	bike_markers[doc.id].setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude]);
 
       	// Clear update location flag
-			db.collection("devices").doc(doc.id).update("shouldUpdateLocation", false);
+			db.collection("devices").doc(doc.id).update("shouldUpdateLocation", false); // TODO
     	});
   	});
 }
