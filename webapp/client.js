@@ -23,6 +23,8 @@ MAP_STYLE = {
 }
 var map = new mapboxgl.Map(MAP_STYLE);
 
+//Click on the map - centers on location
+
 
 /* PARAMETERS */
 UPDATE_INTERVAL = 10000; // milliseconds
@@ -114,11 +116,16 @@ function populate_map(data) {
 	console.log("Map populated");
 }
 
+// Click - center 
+marker.addEventListener("click", function (e){
+  map.flyTo(this.getLatLng());
+});
+
+
 function begin_update_loop() {
 	console.log("Beginning update loop");
 	setInterval(update_data, UPDATE_INTERVAL);
 }
-
 
 function update_data() {
 	console.log("Periodic Update");
@@ -174,8 +181,6 @@ function get_last_update_string(timestamp) {
    else 
       return Math.floor(elapsed_time/60/60/24) + " " + ((Math.floor(elapsed_time/60/60/24) == 1)?"day":"days") + " ago";
 }
-
-
 
 
 
