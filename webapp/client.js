@@ -8,7 +8,7 @@ var db = firebase.firestore();
 
 
 /* MAP BOX */
-mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2lqbmpqazdlMDBsdnRva284cWd3bm11byJ9.V6Hg2oYJwMAxeoR9GEzkAA';
+mapboxgl.accessToken = 'pk.eyJ1IjoiNDA4cmZsZWV0IiwiYSI6ImNqdWJmeXJqdzBkNG40NG8wMXFoZDlqYncifQ.YkRrorh-PE6HVYDtZf1nAw';
 
 // Map Style
 MAP_STYLE = {
@@ -22,6 +22,8 @@ MAP_STYLE = {
 	zoom: 13
 }
 var map = new mapboxgl.Map(MAP_STYLE);
+
+//Click on the map - centers on location
 
 
 /* PARAMETERS */
@@ -61,12 +63,15 @@ function get_initial_data() {
 function populate_map(data) {
 	data.forEach((doc) => {
 		// console.log(doc.id, " => ", doc.data());
+		var el = document.createElement('div');
+
+		el.className = 'marker';
 
 		// Add new marker
-		bike_markers[doc.id] = new mapboxgl.Marker()
+		bike_markers[doc.id] = new mapboxgl.Marker(el)
 			.setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude])
 			.setPopup(new mapboxgl.Popup({offset: 30}) // add popups
-            .setHTML('<h3>' + "ID: " +  doc.data().deviceID + '</h3><p>' + doc.data().deviceName + '</p><p>' + "Battery: " + '</p>'))
+            .setHTML('<h3>' + doc.data().deviceName + '</h3><p><h4>' + "ID: " + doc.data().deviceID + '<p>' + "Battery: " + '</h4></p>'))
 			
 			.addTo(map);
 
@@ -77,12 +82,17 @@ function populate_map(data) {
 	console.log("Map populated");
 }
 
+// Click - center 
+marker.addEventListener("click", function (e){
+  map.flyTo(this.getLatLng());
+});
+
+
 function begin_update_loop() {
 	console.log("Beginning update loop");
 
 	setInterval(update_data, UPDATE_INTERVAL);
 }
-
 
 function update_data() {
 	console.log("Periodic Update");
@@ -100,8 +110,6 @@ function update_data() {
     	});
   	});
 }
-
-
 
 
 

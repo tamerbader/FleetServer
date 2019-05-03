@@ -8,6 +8,9 @@ admin.initializeApp();
 
 const firestore_device = admin.firestore().collection('devices');
 
+////// I WUV YOU ❤️❤️❤️
+// HEWOOO I WUV YOU TOO <3 
+// I WUV YOU MORE!!! <3
 
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
