@@ -15,11 +15,11 @@ MAP_STYLE = {
 	// container id specified in the HTML
 	container: 'map',
 	// style URL
-	style: 'mapbox://styles/mapbox/light-v10',
+	style: 'mapbox://styles/mapbox/streets-v11',
 	// initial position in [long, lat] format
-	center: [-77.034084142948, 38.909671288923],
+	center: [-76.937498, 38.992132],
 	// initial zoom
-	zoom: 13
+	zoom: 15
 }
 var map = new mapboxgl.Map(MAP_STYLE);
 
@@ -30,22 +30,49 @@ UPDATE_INTERVAL = 10000; // milliseconds
 
 /* Global Data Structures and Variables */
 bike_markers = {};
+bike_marker_elements = {};
 last_timestamp = 0;
 
 
 
 /* Initialization */
 $('document').ready(function() {
-	console.log("Initializing App!");
 	init_map();
 	console.log("Initialization Complete!");
 });
 
-
 // Initialize Map
 function init_map() {
+  // Add geolocate control to the map.
+  map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true
+  }));
+
+  init_menu();
+
+  // Disable double click zoom functionality
+  map.doubleClickZoom.disable();
+
+  // Populate map with data
 	get_initial_data();
+
 	setTimeout(begin_update_loop, UPDATE_INTERVAL);
+}
+
+// Initialize menu
+function init_menu() {
+  var layerList = document.getElementById('menu');
+  var inputs = layerList.getElementsByTagName('input');
+   
+  function switchLayer(layer) {
+    var layerId = layer.target.id;
+    map.setStyle('mapbox://styles/mapbox/' + layerId);
+  }
+   
+  for (var i = 0; i < inputs.length; i++) {
+    inputs[i].onclick = switchLayer;
+  }
 }
 
 function get_initial_data() {
@@ -57,12 +84,25 @@ function populate_map(data) {
 		// create a HTML element for marker
 		var marker_element = document.createElement('div');
 		marker_element.className = 'marker';
+    marker_element.dataset.id = doc.id;
 
-      // Add new marker
-      var marker = new mapboxgl.Marker(marker_element)
-         .setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude])
-         .setPopup(new mapboxgl.Popup({offset: 30}).setHTML(generate_popup_HTML(doc.data())))
-         .addTo(map);
+    marker_element.onclick = function(e) {
+      // console.log("doubl click");
+      var clicked_element = e.path[0];
+      var loc = bike_markers[clicked_element.dataset.id].getLngLat();
+      // window.alert(loc.lng + " " + loc.lat);
+      // console.log(loc);
+      map.flyTo({
+        center: [loc.lng, loc.lat],
+        zoom: 15,
+      });
+    }
+
+    // Add new marker
+    var marker = new mapboxgl.Marker(marker_element)
+       .setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude])
+       .setPopup(new mapboxgl.Popup({offset: 30}).setHTML(generate_popup_HTML(doc.data())))
+       .addTo(map);
 
 		// Save marker in data structure
 		bike_markers[doc.id] = marker;
