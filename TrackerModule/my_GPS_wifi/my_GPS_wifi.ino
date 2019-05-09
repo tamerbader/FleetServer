@@ -50,6 +50,7 @@ LFile myFile;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  Serial.println("Starting setup...");
   pinMode(10, OUTPUT);
   Drv.begin();
   if(GPS_START){
@@ -88,24 +89,16 @@ void setup() {
     }
     gsm_on = 1;
   }
-  delay(3000);
+  Serial.println("Done setup...");
+  Serial.flush();
+  delay(10000);
 }
 
 void loop() {
   Serial.println("Starting loop");
-  gpsSentenceInfoStruct info;
   char URL[100] = "us-central1-fleet-8b5a9.cloudfunctions.net";
   char buff[256];
-  double latitude;
-  double longitude;
-  char lat_dir = 0;
-  char long_dir = 0;
-  struct GPSInfo gps_info; //struct to put parsed gps info into
-  struct resParameters res_info; //struct to store response parameters into
-  int ping_freq = 10; // ping frequency in seconds;
   int rt = 0;
-  if(wifi_on || gsm_on){
-      char response[100] = {0};
   int i = 0;
   char attp_count = 0;
   myFile = Drv.open("doge.jpg", FILE_READ);
@@ -119,9 +112,15 @@ void loop() {
   Serial.println("Starting base64 encoding..");
   int base64_length = encode_base64(pic, fileSize, base64_pic);
   free(pic);
+  Drv.remove("temp_base64");
+  LFile myTempFile = Drv.open("temp_base64", FILE_WRITE);
+  for(i = 0; i < base64_length; i++){
+    myTempFile.write(base64_pic[i]);
+  }
+  myTempFile.close();
+  
   Serial.println("Done base64 encoding..");
-  LGPRSClient client;
-  client.setTimeout(10000);
+  LWiFiClient client;
   Serial.println("Connecting to website");
   while (0 == client.connect(URL,80)){
     attp_count++;
@@ -131,20 +130,26 @@ void loop() {
     Serial.println("Re-Connecting to WebSite");
     delay(1000);
   }
-  Serial.print("base 64 string object: ");
-  String x = ", \"image\":" + String((char*)base64_pic) + "}";
-  Serial.println(x);
-  String data = "{\"deviceId\":" + String(178967) + ", \"image\":" + String((char*)base64_pic) + "}";
+  /*myTempFile = Drv.open("temp_base64", FILE_READ);*/
+  String data = "{\"deviceId\":" + String(178967) + ", \"image\":\""+ String((char*)base64_pic) + "\"}\n";
+  Serial.println(data.length());
   client.print("POST /uploadImage");
   client.println(" HTTP/1.1");
   client.println("Content-Type: application/json");
   client.println("Content-Length: " + String(data.length()));
   client.print("Host: ");
   client.println(URL);
-  client.print("\n" + data + "\n");
-  Serial.println(data);
-  Serial.println("waiting HTTP response:");
+  client.print("\n" + data);
+ /* char buf[2] = {0};
+  for( i = 0; i < base64_length; i++){
+    buf[0] = myTempFile.read();
+    buf[1] = 0;
+    client.print(buf);
+  }
+  client.println("}");
+  myTempFile.close();*/
   free(base64_pic);
+  Serial.println("waiting HTTP response:");
   while (!client.available()){
     delay(100);
   }
@@ -157,26 +162,11 @@ void loop() {
   while (client){
     int v = client.read();
     if (v != -1){
-      response[i++] = v;
       Serial.print((char)v);
     }else{
       Serial.println("no more content, disconnect");
       client.stop();
     }
   }
-  /*  Serial.println("GPS loop");
-    LGPS.getData(&info);
-    Serial.println((char*)info.GPGGA); 
-    parseGPGGA((const char*)info.GPGGA, &gps_info);
-    rt = sendPulse(&gps_info,178967,&res_info);
-    if(rt == RES_OK){
-      ping_freq = res_info.ping_freq;
-      Serial.print("Set ping frequency to: ");
-      Serial.println(ping_freq);
-    }*/
-  }else{
-    Serial.println("Could not connect to any network");
-  }
-
-  delay(5000);
+  delay(50000);
 }
