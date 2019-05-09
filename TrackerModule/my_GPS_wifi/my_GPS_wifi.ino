@@ -1,5 +1,6 @@
 #include <LGPS.h>
 #include <LWiFi.h>
+#include <LAudio.h>
 #include <LWiFiClient.h>
 #include <LGPRS.h>
 #include <LStorage.h>
@@ -91,11 +92,14 @@ void setup() {
   }
   Serial.println("Done setup...");
   Serial.flush();
-  delay(10000);
+  LAudio.begin();
+  delay(3000);
 }
 
 void loop() {
   Serial.println("Starting loop");
+  LAudio.playFile(storageFlash, (char*)"sound.mp3");
+  LAudio.setVolume(6);
   char URL[100] = "us-central1-fleet-8b5a9.cloudfunctions.net";
   char buff[256];
   int rt = 0;
@@ -131,7 +135,7 @@ void loop() {
     delay(1000);
   }
   /*myTempFile = Drv.open("temp_base64", FILE_READ);*/
-  String data = "{\"deviceId\":" + String(178967) + ", \"image\":\""+ String((char*)base64_pic) + "\"}\n";
+  String data = "{\"deviceId\":" + String(178967) + ", \"image\":\""+ String((char*)base64_pic) + "\"}";
   Serial.println(data.length());
   client.print("POST /uploadImage");
   client.println(" HTTP/1.1");
@@ -139,7 +143,7 @@ void loop() {
   client.println("Content-Length: " + String(data.length()));
   client.print("Host: ");
   client.println(URL);
-  client.print("\n" + data);
+  client.print("\n" + data+"\n");
  /* char buf[2] = {0};
   for( i = 0; i < base64_length; i++){
     buf[0] = myTempFile.read();
@@ -149,9 +153,15 @@ void loop() {
   client.println("}");
   myTempFile.close();*/
   free(base64_pic);
+  int res_count = 0;
   Serial.println("waiting HTTP response:");
-  while (!client.available()){
+  while (!client.available() || res_count > 50){
     delay(100);
+    res_count++;
+  }
+  if(res_count > 50){
+    delay(5000);
+    return;
   }
   // HTTP headers end with an empty line
   char endOfHeaders[] = "\r\n\r\n";
@@ -168,5 +178,5 @@ void loop() {
       client.stop();
     }
   }
-  delay(50000);
+  delay(10000);
 }
