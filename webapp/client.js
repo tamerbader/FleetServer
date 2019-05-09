@@ -157,8 +157,7 @@ function update_last_timestamp(candidate_timestamp) {
 
 function generate_popup_HTML(data) {
    html = '<h3>' + data.deviceID + " (" + data.deviceName + ")" + '</h3>'+ 
-      '<h4>' + "Lat: " + data.lastKnownLatitude + '</h4>' +
-      '<h4>' + "Lng: " + data.lastKnownLongitude + '</h4>' +
+      '<h4>' + "Loc: " + data.lastKnownLatitude + ', ' + data.lastKnownLongitude + '</h4>' +
       // '<h4>' + "Time: " + (new Date(data.timestamp).toLocaleString()) + '</h4>' +
       '<h4>' + "Last Update: " + get_last_update_string(data.timestamp) + '</h4>'+
       '<h4>' + 'Ping: ' + '<span id="ping-' + data.deviceID + '">' + data.pingFrequency + '</span>' + ' sec</h4>' + 
