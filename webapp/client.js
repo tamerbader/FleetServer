@@ -140,23 +140,13 @@ function update_data() {
 
       	// Update marker
       	bike_markers[doc.id].setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude]);
-         bike_markers[doc.id].getPopup().setHTML(generate_popup_HTML(doc.data()));
+        bike_markers[doc.id].getPopup().setHTML(generate_popup_HTML(doc.data()));
 
-      	// Clear update location flag
-			db.collection("devices").doc(doc.id).update("shouldUpdateLocation", false); // TODO
-
-         // Update global last timestamp
-         update_last_timestamp(doc.data().timestamp);
+        // Update global last timestamp
+        update_last_timestamp(doc.data().timestamp);
     	});
   	});
 }
-
-//Ring button 
-console.log('Client-side code running');
-  const button = document.getElementById('ringButton');
-  button.addEventListener('click', function(e) {
-    console.log('button was clicked');
-});
 
 
 function update_last_timestamp(candidate_timestamp) {
@@ -168,14 +158,15 @@ function update_last_timestamp(candidate_timestamp) {
 function generate_popup_HTML(data) {
    html = '<h3>' + data.deviceID + " (" + data.deviceName + ")" + '</h3>'+ 
       '<h4>' + "Lat: " + data.lastKnownLatitude + '</h4>' +
-      '<h4>' + "Long: " + data.lastKnownLongitude + '</h4>' +
-      '<h4>' + "Time: " + (new Date(data.timestamp).toLocaleString()) + '</h4>' +
+      '<h4>' + "Lng: " + data.lastKnownLongitude + '</h4>' +
+      // '<h4>' + "Time: " + (new Date(data.timestamp).toLocaleString()) + '</h4>' +
       '<h4>' + "Last Update: " + get_last_update_string(data.timestamp) + '</h4>'+
-      '<h4>' + '<button class="btn onclick="myFunction()"> <i class="fas fa-bell"></i> &nbsp; Ring</button>'+ '</h4>'  ; 
+      '<h4>' + 'Ping: ' + '<span id="ping-' + data.deviceID + '">' + data.pingFrequency + '</span>' + ' sec</h4>' + 
+      '<h4><input type="range" min="5" max="60" value="' + data.pingFrequency + 
+        '" class="slider" id="slider-' + data.deviceID + '" onchange="ping_slider_onchange(' + data.deviceID + ')" oninput="ping_slider_oninput(' + data.deviceID + ')"></h4>' + 
+      '<h4>' + '<button class="btn" onclick="send_ring_to_firebase(' + data.deviceID + ')"> <i class="fas fa-bell"></i> &nbsp; Ring</button>'+ '</h4>';
    return html;
 }
-
-
 
 function get_last_update_string(timestamp) {
    prev_date = new Date(timestamp);
@@ -195,6 +186,31 @@ function get_last_update_string(timestamp) {
       return Math.floor(elapsed_time/60/60/24) + " " + ((Math.floor(elapsed_time/60/60/24) == 1)?"day":"days") + " ago";
 }
 
+function center_zoom(id) {
+  var marker = bike_markers[id];
+  if(!marker.getPopup().isOpen()) {
+    marker.togglePopup();
+  }
+
+  var loc = marker.getLngLat();
+
+  map.flyTo({
+    center: [loc.lng, loc.lat],
+    zoom: 15,
+  });
+}
+
+function send_ring_to_firebase(id) {
+  db.collection("devices").doc(String(id)).update("alarmEnabled", true);
+}
+
+function ping_slider_onchange(id) {
+  db.collection("devices").doc(String(id)).update("pingFrequency", document.getElementById("slider-" + id).value-5);
+}
+
+function ping_slider_oninput(id) {
+  document.getElementById("ping-" + id).innerHTML = document.getElementById("slider-" + id).value;
+}
 
 
 /* UNUSED */
@@ -210,20 +226,6 @@ function get_firebase() {
     querySnapshot.forEach((doc) => {
       console.log(doc.id, " => ", doc.data());
     });
-  });
-}
-
-function center_zoom(id) {
-  var marker = bike_markers[id];
-  if(!marker.getPopup().isOpen()) {
-    marker.togglePopup();
-  }
-
-  var loc = marker.getLngLat();
-
-  map.flyTo({
-    center: [loc.lng, loc.lat],
-    zoom: 15,
   });
 }
 
