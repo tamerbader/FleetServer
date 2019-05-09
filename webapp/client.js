@@ -32,9 +32,8 @@ UPDATE_INTERVAL = 10000; // milliseconds
 
 /* Global Data Structures and Variables */
 bike_markers = {};
-bike_marker_elements = {};
 last_timestamp = 0;
-
+last_touch_timestamp = 0;
 
 
 /* Initialization */
@@ -88,16 +87,20 @@ function populate_map(data) {
 		marker_element.className = 'marker';
     marker_element.dataset.id = doc.id;
 
-    marker_element.onclick = function(e) {
-      // console.log("doubl click");
-      var clicked_element = e.path[0];
-      var loc = bike_markers[clicked_element.dataset.id].getLngLat();
-      // window.alert(loc.lng + " " + loc.lat);
-      // console.log(loc);
-      map.flyTo({
-        center: [loc.lng, loc.lat],
-        zoom: 15,
-      });
+    marker_element.ondblclick = function(e) {
+      center_zoom(e.path[0].dataset.id);
+    }
+
+    marker_element.ontouchstart = function(e) {
+      var now = new Date().getTime()
+      var time_elapsed = now - last_touch_timestamp;
+      last_touch_timestamp = new Date().getTime();
+
+      if((time_elapsed < 300) && (time_elapsed > 0)) {
+        center_zoom(e.target.dataset.id);  
+      }
+      
+      last_touch_timestamp = now
     }
 
     // Add new marker
@@ -109,17 +112,17 @@ function populate_map(data) {
 		// Save marker in data structure
 		bike_markers[doc.id] = marker;
 
-      // Update last timestamp
-      update_last_timestamp(doc.data().timestamp);
+    // Update last timestamp
+    update_last_timestamp(doc.data().timestamp);
 	});
 
 	console.log("Map populated");
 }
 
 // Click - center 
-marker.addEventListener("click", function (e){
-  map.flyTo(this.getLatLng());
-});
+// marker.addEventListener("click", function (e){
+//   map.flyTo(this.getLatLng());
+// });
 
 
 function begin_update_loop() {
@@ -197,6 +200,20 @@ function get_firebase() {
     querySnapshot.forEach((doc) => {
       console.log(doc.id, " => ", doc.data());
     });
+  });
+}
+
+function center_zoom(id) {
+  var marker = bike_markers[id];
+  if(!marker.getPopup().isOpen()) {
+    marker.togglePopup();
+  }
+
+  var loc = marker.getLngLat();
+
+  map.flyTo({
+    center: [loc.lng, loc.lat],
+    zoom: 15,
   });
 }
 
