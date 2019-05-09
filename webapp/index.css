@@ -62,7 +62,15 @@ a:hover {
   color: #fff;
 }
 
-
+.btn {
+  background-color: #189ad3;
+  color: white;
+  width: 100%;
+  padding: 7px;
+  font-size: 15px;
+  border-radius: 5px;
+  border: white;
+}
 
 .marker {
   border: none;
@@ -126,3 +134,4 @@ a:hover {
   color: black;
   background: rgba(255, 255, 255, 0.5);
 }
+

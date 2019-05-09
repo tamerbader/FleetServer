@@ -148,6 +148,13 @@ function update_data() {
   	});
 }
 
+//Ring button 
+console.log('Client-side code running');
+  const button = document.getElementById('ringButton');
+  button.addEventListener('click', function(e) {
+    console.log('button was clicked');
+});
+
 
 function update_last_timestamp(candidate_timestamp) {
    if(candidate_timestamp > last_timestamp) {
@@ -160,9 +167,12 @@ function generate_popup_HTML(data) {
       '<h4>' + "Lat: " + data.lastKnownLatitude + '</h4>' +
       '<h4>' + "Long: " + data.lastKnownLongitude + '</h4>' +
       '<h4>' + "Time: " + (new Date(data.timestamp).toLocaleString()) + '</h4>' +
-      '<h4>' + "Last Update: " + get_last_update_string(data.timestamp) + '</h4>';
+      '<h4>' + "Last Update: " + get_last_update_string(data.timestamp) + '</h4>'+
+      '<h4>' + '<button class="btn onclick="myFunction()"> <i class="fas fa-bell"></i> &nbsp; Ring</button>'+ '</h4>'  ; 
    return html;
 }
+
+
 
 function get_last_update_string(timestamp) {
    prev_date = new Date(timestamp);
