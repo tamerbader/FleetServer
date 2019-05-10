@@ -111,6 +111,7 @@ a:hover {
   min-width:180px;
   border-radius: 7px;
 }
+
 .mapboxgl-popup-content h3 {
   background: #189ad3;
   color:#fff;
@@ -127,6 +128,15 @@ a:hover {
   padding: 10px 10px 10px 10px;
   font-weight:400;
 }
+
+.mapboxgl-popup-content h5 {
+  margin: 0;
+  display: block;
+  padding: 2px 2px 2px 10px;
+  font-weight: 400;
+  font-size: 25px;
+}
+
 #menu {
   position: absolute;
   left: 0px;
@@ -163,4 +173,9 @@ a:hover {
   border: none;
   background: #189ad3;
   cursor: pointer;
+}
+
+.fa-battery-quarter{
+  content: "\f243";
+  font-size: 20px;
 }
