@@ -1,4 +1,4 @@
-/* FIREBASE */
+/* FIREBASE API */
 firebase.initializeApp({
  	apiKey: 'AIzaSyD4Zu6YxrA9AQaeNU1WTj64mzkWnoi_ZAM',
  	authDomain: 'fleet-8b5a9.firebaseapp.com',
@@ -7,7 +7,7 @@ firebase.initializeApp({
 var db = firebase.firestore();
 
 
-/* MAP BOX */
+/* MAP BOX API */
 mapboxgl.accessToken = 'pk.eyJ1IjoiNDA4cmZsZWV0IiwiYSI6ImNqdWJmeXJqdzBkNG40NG8wMXFoZDlqYncifQ.YkRrorh-PE6HVYDtZf1nAw';
 
 // Map Style
@@ -23,8 +23,6 @@ MAP_STYLE = {
 }
 var map = new mapboxgl.Map(MAP_STYLE);
 
-//Click on the map - centers on location
-
 
 /* PARAMETERS */
 UPDATE_INTERVAL = 2000; // milliseconds
@@ -33,7 +31,6 @@ UPDATE_INTERVAL = 2000; // milliseconds
 /* Global Data Structures and Variables */
 bike_markers = {};
 last_timestamp = 0;
-last_touch_timestamp = 0;
 
 
 /* Initialization */
@@ -50,10 +47,9 @@ function init_map() {
     trackUserLocation: true
   }));
 
-  init_menu();
-
-  // Disable double click zoom functionality
   map.doubleClickZoom.disable();
+
+  init_menu();
 
   // Populate map with data
 	get_initial_data();
@@ -92,18 +88,6 @@ function populate_map(data) {
       center_zoom(e.path[0].dataset.id);
     }
 
-    marker_element.ontouchstart = function(e) {
-      var now = new Date().getTime()
-      var time_elapsed = now - last_touch_timestamp;
-      last_touch_timestamp = new Date().getTime();
-
-      if((time_elapsed < 300) && (time_elapsed > 0)) {
-        center_zoom(e.target.dataset.id);  
-      }
-      
-      last_touch_timestamp = now
-    }
-
     // Add new marker
     var marker = new mapboxgl.Marker(marker_element)
        .setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude])
@@ -130,9 +114,9 @@ function update_data() {
 	console.log("Periodic Update");
 
 	// Query only entries with update location flag set
-	db.collection("devices").where("timestamp", ">", last_timestamp).get().then((data) => {
+	db.collection("devices").get().then((data) => {
     	data.forEach((doc) => {
-      	console.log(doc.id, " => ", doc.data());
+      	// console.log(doc.id, " => ", doc.data());
 
         // Update element dataset
         bike_markers[doc.id].dataset.timestamp = doc.data().timestamp;
@@ -155,15 +139,33 @@ function update_last_timestamp(candidate_timestamp) {
 }
 
 function generate_popup_HTML(data) {
-   html = '<h3>' + data.deviceID + " (" + data.deviceName + ")" + '</h3>'+ 
-      '<h4>' + "Loc: " + data.lastKnownLatitude + ', ' + data.lastKnownLongitude + '</h4>' +
+   html = '<h3>' + data.deviceID + '<i class="' + get_battery_class(data.battery) + '"></i>' + '</h3>'+ 
+      '<h4>' + '<b>Name: </b>' + data.deviceName + '</h4>'+ 
+      '<h4>' + '<b>Loc: </b>(' + data.lastKnownLatitude.toFixed(5) + ', ' + data.lastKnownLongitude.toFixed(5) + ')</h4>' +
       // '<h4>' + "Time: " + (new Date(data.timestamp).toLocaleString()) + '</h4>' +
-      '<h4>' + "Last Update: " + '<span id="last-update-' + data.deviceID + '">' + get_last_update_string(data.timestamp) + '</span></h4>'+
-      '<h4>' + 'Ping: ' + '<span id="ping-' + data.deviceID + '">' + (data.pingFrequency + 5) + '</span>' + ' sec</h4>' + 
-      '<h4><input type="range" min="5" max="60" value="' + (data.pingFrequency + 5) +  
+      '<h4>' + "<b>Last Update: </b>" + get_last_update_string(data.timestamp) + '</h5>'+
+      '<h4>' + '<b>Ping: </b>' + '<span id="ping-' + data.deviceID + '">' + (data.pingFrequency + 5) + '</span>' + ' sec</h4>' + 
+      '<h4><input type="range" min="5" max="60" value="' + (data.pingFrequency + 5) +
         '" class="slider" id="slider-' + data.deviceID + '" onchange="ping_slider_onchange(' + data.deviceID + ')" oninput="ping_slider_oninput(' + data.deviceID + ')"></h4>' + 
       '<h4>' + '<button class="btn" onclick="send_ring_to_firebase(' + data.deviceID + ')"> <i class="fas fa-bell"></i> &nbsp; Ring</button>'+ '</h4>';
    return html;
+}
+
+function get_battery_class(battery) {
+  if(battery == 0) {
+    return "fas fa-battery fa-battery-slash";
+  } else if (battery <= 25) {
+    return "fas fa-battery fa-battery-quarter";
+  } else if (battery <= 50) {
+    return "fas fa-battery fa-battery-half";
+  } else if (battery <= 75) {
+    return "fas fa-battery fa-battery-three-quarters";
+  } else if (battery <= 100) {
+    return "fas fa-battery fa-battery-full";
+  } else {
+    console.log("Invalid battery level:", battery);
+    return "";
+  }
 }
 
 function get_last_update_string(timestamp) {
@@ -173,11 +175,11 @@ function get_last_update_string(timestamp) {
    elapsed_time = (curr_date.getTime() - prev_date.getTime()) / 1000;
 
    if(elapsed_time < 10) 
-      return "A few seconds ago";
+      return "A few sec ago";
    else if(elapsed_time < 60) 
-      return Math.floor(elapsed_time) + " seconds ago";
+      return Math.floor(elapsed_time) + " sec ago";
    else if(elapsed_time < 60*60) 
-      return Math.floor(elapsed_time/60) + " " + ((Math.floor(elapsed_time/60) == 1)?"minute":"minutes") + " ago";
+      return Math.floor(elapsed_time/60) + " min ago";
    else if(elapsed_time < 60*60*24) 
       return Math.floor(elapsed_time/60/60) + " " + ((Math.floor(elapsed_time/60/60) == 1)?"hour":"hours") + " ago";
    else 
@@ -194,7 +196,7 @@ function center_zoom(id) {
 
   map.flyTo({
     center: [loc.lng, loc.lat],
-    zoom: 15,
+    zoom: 18,
   });
 }
 
@@ -208,23 +210,6 @@ function ping_slider_onchange(id) {
 
 function ping_slider_oninput(id) {
   document.getElementById("ping-" + id).innerHTML = document.getElementById("slider-" + id).value;
-}
-
-
-/* UNUSED */
-
-function update_firebase() {
-  db.collection("devices").doc("111111").updated("shouldUpdateLocation", false).then(() => {
-    console.log("successfully updated!\n");
-  });
-}
-
-function get_firebase() {
-  db.collection("devices").get().then((querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-      console.log(doc.id, " => ", doc.data());
-    });
-  });
 }
 
 
