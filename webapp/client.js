@@ -118,9 +118,6 @@ function update_data() {
     	data.forEach((doc) => {
       	// console.log(doc.id, " => ", doc.data());
 
-        // Update element dataset
-        bike_markers[doc.id].dataset.timestamp = doc.data().timestamp;
-
       	// Update marker
       	bike_markers[doc.id].setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude]);
         bike_markers[doc.id].getPopup().setHTML(generate_popup_HTML(doc.data()));
