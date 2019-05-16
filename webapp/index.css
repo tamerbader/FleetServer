@@ -6,21 +6,21 @@ body {
     -webkit-font-smoothing:antialiased;
   }
 
-  * {
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;
-    box-sizing:border-box;
-  }
+* {
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  box-sizing:border-box;
+}
   /*Side bar*/
-  .sidebar {
-    position: absolute;
-    width: 100%;
-    height: 65px;
-    top: 0;
-    left: 0;
-    overflow: hidden;
-    border-bottom: 1px solid rgba(0,0,0,0.25);
-    background-color:  #189ad3;
+.sidebar {
+  position: absolute;
+  width: 100%;
+  height: 50px;
+  top: 0;
+  left: 0;
+  background-color: #189ad3;
+  box-shadow: 0px 0px 10px #888888;
+  z-index: 1;
 }
 
 .pad2 {
@@ -30,7 +30,7 @@ body {
 .map {
   position: absolute;
   width: 100%;
-  top: 65px;
+  top: 50px;
   bottom: 0;
 }
 
@@ -38,8 +38,7 @@ h1 {
   font-size:22px;
   margin:0;
   font-weight:400;
-  line-height: 20px;
-  padding: 22px 20px 2px;
+  padding: 15px 20px 2px;
   color: white;
 }
 
@@ -96,20 +95,16 @@ a:hover {
 .mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
   border-bottom-color: #189ad3;
 }
-/*.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
-  border-bottom-color: #189ad3;
-}
-.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip {
-  border-bottom-color: #189ad3;
-}*/
+
 .mapboxgl-popup-close-button {
-  color: white;
+  display: none;
 }
 .mapboxgl-popup-content {
   font:400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
   padding:0;
   min-width:180px;
   border-radius: 7px;
+  box-shadow: 0px 0px 10px #888888;
 }
 
 .mapboxgl-popup-content h3 {
@@ -120,30 +115,23 @@ a:hover {
   padding:10px;
   border-radius: 7px 7px 0 0;
   margin-top:0;
-  font-weight: 400;
+  font-weight: normal;
 }
 .mapboxgl-popup-content h4 {
   margin:0;
   display:block;
   padding: 10px 10px 10px 10px;
-  font-weight:400;
-}
-
-.mapboxgl-popup-content h5 {
-  margin: 0;
-  display: block;
-  padding: 2px 2px 2px 10px;
-  font-weight: 400;
-  font-size: 25px;
+  font-weight: normal;
+  color: black;
 }
 
 #menu {
   position: absolute;
   left: 0px;
-  top: 65px;
+  top: 50px;
   padding: 5px;
   color: black;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .slider {
@@ -175,7 +163,6 @@ a:hover {
   cursor: pointer;
 }
 
-.fa-battery-quarter{
-  content: "\f243";
-  font-size: 20px;
+.fa-battery {
+  padding-left: 100px;
 }
