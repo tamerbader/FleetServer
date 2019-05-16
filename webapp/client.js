@@ -27,7 +27,7 @@ var map = new mapboxgl.Map(MAP_STYLE);
 
 
 /* PARAMETERS */
-UPDATE_INTERVAL = 10000; // milliseconds
+UPDATE_INTERVAL = 2000; // milliseconds
 
 
 /* Global Data Structures and Variables */
@@ -86,6 +86,7 @@ function populate_map(data) {
 		var marker_element = document.createElement('div');
 		marker_element.className = 'marker';
     marker_element.dataset.id = doc.id;
+    marker_element.dataset.timestamp = doc.data().timestamp;
 
     marker_element.ondblclick = function(e) {
       center_zoom(e.path[0].dataset.id);
@@ -119,11 +120,6 @@ function populate_map(data) {
 	console.log("Map populated");
 }
 
-// Click - center 
-// marker.addEventListener("click", function (e){
-//   map.flyTo(this.getLatLng());
-// });
-
 
 function begin_update_loop() {
 	console.log("Beginning update loop");
@@ -137,6 +133,9 @@ function update_data() {
 	db.collection("devices").where("timestamp", ">", last_timestamp).get().then((data) => {
     	data.forEach((doc) => {
       	console.log(doc.id, " => ", doc.data());
+
+        // Update element dataset
+        bike_markers[doc.id].dataset.timestamp = doc.data().timestamp;
 
       	// Update marker
       	bike_markers[doc.id].setLngLat([doc.data().lastKnownLongitude, doc.data().lastKnownLatitude]);
@@ -159,9 +158,9 @@ function generate_popup_HTML(data) {
    html = '<h3>' + data.deviceID + " (" + data.deviceName + ")" + '</h3>'+ 
       '<h4>' + "Loc: " + data.lastKnownLatitude + ', ' + data.lastKnownLongitude + '</h4>' +
       // '<h4>' + "Time: " + (new Date(data.timestamp).toLocaleString()) + '</h4>' +
-      '<h4>' + "Last Update: " + get_last_update_string(data.timestamp) + '</h4>'+
-      '<h4>' + 'Ping: ' + '<span id="ping-' + data.deviceID + '">' + data.pingFrequency + '</span>' + ' sec</h4>' + 
-      '<h4><input type="range" min="5" max="60" value="' + data.pingFrequency + 
+      '<h4>' + "Last Update: " + '<span id="last-update-' + data.deviceID + '">' + get_last_update_string(data.timestamp) + '</span></h4>'+
+      '<h4>' + 'Ping: ' + '<span id="ping-' + data.deviceID + '">' + (data.pingFrequency + 5) + '</span>' + ' sec</h4>' + 
+      '<h4><input type="range" min="5" max="60" value="' + (data.pingFrequency + 5) +  
         '" class="slider" id="slider-' + data.deviceID + '" onchange="ping_slider_onchange(' + data.deviceID + ')" oninput="ping_slider_oninput(' + data.deviceID + ')"></h4>' + 
       '<h4>' + '<button class="btn" onclick="send_ring_to_firebase(' + data.deviceID + ')"> <i class="fas fa-bell"></i> &nbsp; Ring</button>'+ '</h4>';
    return html;
