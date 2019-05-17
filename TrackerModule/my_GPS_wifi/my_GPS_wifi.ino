@@ -1,4 +1,6 @@
 #include <LGPS.h>
+#include <LAudio.h>
+#include <LBattery.h>
 #include <LWiFi.h>
 #include <LWiFiClient.h>
 #include <LGPRS.h>
@@ -7,8 +9,8 @@
 #include <ArduinoJson.h>
 
 //Start connection setting
-#define WIFI_START 1
-#define GSM_START 0
+#define WIFI_START 0
+#define GSM_START 1
 #define COMM_MODE 'G'
 
 //GSM settings
@@ -38,12 +40,17 @@ struct GPSInfo{
 };
 struct resParameters{
   int ping_freq;
+  int alarm;
 };
 char wifi_on = 0;
 char gsm_on = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  LAudio.begin();
+  Serial.println("Playing audio...");
+  LAudio.playFile(storageFlash, (char*)"boot.mp3");
+  LAudio.setVolume(6);
   Serial.println("LGPS Power on, and waiting ...");
   LGPS.powerOn();
   char attp_count = 0;
@@ -102,7 +109,13 @@ void loop() {
       ping_freq = res_info.ping_freq;
       Serial.print("Set ping frequency to: ");
       Serial.println(ping_freq);
+      if(res_info.alarm){
+        Serial.println("Playing audio...");
+        LAudio.playFile(storageFlash, (char*)"sound.mp3");
+        LAudio.setVolume(6);
+      }
     }
+
   }else{
     Serial.println("Could not connect to any network");
   }

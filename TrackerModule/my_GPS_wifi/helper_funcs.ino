@@ -23,7 +23,7 @@ static int sendPulse(struct GPSInfo * gps_info, int id, char m, struct resParame
     delay(1000);
   }
   
-  String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ ", \"hdop\":" + String(gps_info->hdop)+"}";
+  String data = "{\"latitude\":"+ String(lat_str) + ", \"longitude\":" + String(long_str) +", \"deviceID\":" + String(id)+ ", \"hdop\":" + String(gps_info->hdop)+", \"battery\":" +String(LBattery.level())+"}";
   client.print("POST /sendPulse");
   client.println(" HTTP/1.1");
   client.println("Content-Type: application/json");
@@ -57,21 +57,24 @@ static int sendPulse(struct GPSInfo * gps_info, int id, char m, struct resParame
   
 }
 static int parsePulseJsonResponse( char * response, struct resParameters * resInfo){
-  const int capacity=JSON_OBJECT_SIZE(3); //change as parameters in response increase
+  const int capacity=JSON_OBJECT_SIZE(4); //change as parameters in response increase
   StaticJsonDocument<capacity> doc;
   DeserializationError err = deserializeJson(doc, response);
   int temp_ping_freq = 0;
+  int temp_alarm_en = 0;
   if(err){
     Serial.print("deserializeJson() failed with code ");
     Serial.println(err.c_str());
     return JSON_PARSE_ERR;
   }
   temp_ping_freq = doc["pingFrequency"];
+  temp_alarm_en = doc["alarmEnabled"];
   if(temp_ping_freq == 0){
     Serial.print("Failed to parse ping frequency");
     return JSON_PARSE_ERR;
   }
   resInfo->ping_freq = temp_ping_freq;
+  resInfo->alarm = temp_alarm_en;
   return RES_OK;
 }
 
